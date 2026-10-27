@@ -1611,6 +1611,12 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Simplex LP" => "Simplex LP",
         "Reopen" => "Yeniden Aç",
         "Resolve" => "Çözümle",
+        "Medium" => "Orta",
+        "AutoSum|SUM" => "Toplam",
+        "AutoSum|AVERAGE" => "Ortalama",
+        "AutoSum|COUNT" => "Sayıları Say",
+        "AutoSum|MAX" => "En Büyük",
+        "AutoSum|MIN" => "En Küçük",
         _ => return None,
     })
 }
