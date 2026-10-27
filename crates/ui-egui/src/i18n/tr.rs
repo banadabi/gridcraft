@@ -1195,6 +1195,27 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Arrange All" => "Tümünü Yerleştir",
         "Switch\nWindows" => "Pencerelerde\nGeçiş Yap",
         "Switch Windows" => "Pencerelerde Geçiş Yap",
+        "A clean-room, open-source, Rust-native spreadsheet. Part of ArtCraft." => {
+            "Temiz oda yöntemiyle geliştirilmiş, açık kaynaklı, Rust ile yazılmış bir hesap tablosu. ArtCraft'ın bir parçası."
+        }
+        "Add Watch (active cell)" => "Gözcü Ekle (etkin hücre)",
+        "Automation in this workbook. GridCraft runs its own scripts; a file's VBA project is preserved but not executed." => {
+            "Bu çalışma kitabındaki otomasyon. GridCraft kendi betiklerini çalıştırır; dosyadaki VBA projesi korunur ancak çalıştırılmaz."
+        }
+        "Bring Forward" => "Öne Getir",
+        "Can't Undo" => "Geri Alınamaz",
+        "Fill…" => "Dolgu…",
+        "GridCraft is fully drivable by agents. Every menu item, button and gesture is a command:" => {
+            "GridCraft tamamen ajanlarla yönetilebilir. Her menü öğesi, düğme ve hareket bir komuttur:"
+        }
+        "Let this workbook's scripts run for the rest of this session" => "Bu çalışma kitabının betiklerinin bu oturum boyunca çalışmasına izin ver",
+        "Preview" => "Önizleme",
+        "Reply…" => "Yanıtla…",
+        "Reports:" => "Raporlar:",
+        "Send" => "Gönder",
+        "Send Backward" => "Geriye Gönder",
+        "The chart no longer exists." => "Grafik artık yok.",
+        "Trust Scripts" => "Betiklere Güven",
         _ => return None,
     })
 }
