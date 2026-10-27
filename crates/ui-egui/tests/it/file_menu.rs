@@ -278,6 +278,23 @@ fn the_save_changes_dialog_is_translated() {
     }
 }
 
+/// Dialog buttons and labels written straight into the code go through the catalog too.
+#[test]
+fn the_find_and_replace_dialog_is_translated() {
+    for language in [Language::It, Language::PtBr, Language::Ro] {
+        let mut h = harness(Services::default());
+        h.state_mut().run("app.language.set", serde_json::json!({"language": language.code()})).unwrap();
+        h.state_mut().open_dialog("find", serde_json::json!({"replace": true}));
+        h.run_steps(3);
+        for label in ["Find Next", "Find All", "Replace All"] {
+            let shown = language.tr(label);
+            assert_ne!(shown, label, "{language:?}: {label} has no translation");
+            assert!(h.query_by_role_and_label(egui::accesskit::Role::Button, shown).is_some(), "{language:?}: no {shown} button");
+        }
+        assert!(h.query_all_by_label(language.tr("Find what:")).next().is_some(), "{language:?}: Find what: is not translated");
+    }
+}
+
 #[test]
 fn closing_the_window_can_save_first_and_a_saved_workbook_closes_at_once() {
     let dir = std::env::temp_dir().join(format!("gridcraft-close-window-{}", std::process::id()));

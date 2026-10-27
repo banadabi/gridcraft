@@ -148,7 +148,7 @@ pub(super) fn select_data(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog,
                 let label = if name.is_empty() { format!("Series{}", i + 1) } else { name.clone() };
                 ui.label(if removed { egui::RichText::new(label).strikethrough().weak() } else { egui::RichText::new(label) });
                 if removed {
-                    if ui.small_button("Keep").clicked() {
+                    if ui.small_button(crate::i18n::tr(ui, "Keep")).clicked() {
                         remove.retain(|x| *x != i);
                     }
                 } else if ui.add_enabled(kept > 1, egui::Button::new("Remove").small()).clicked() {

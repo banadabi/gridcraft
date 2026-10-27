@@ -7,7 +7,7 @@ pub(super) fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog
     let selected = names.get(d.list_index).cloned();
     let field = |n: &Json, k: &str| n.get(k).and_then(Json::as_str).unwrap_or("").to_string();
     ui.horizontal(|ui| {
-        if ui.button("New…").clicked() {
+        if ui.button(crate::i18n::tr(ui, "New…")).clicked() {
             app.open_dialog("defineName", json!({}));
         }
         if ui.add_enabled(selected.is_some(), egui::Button::new("Edit…")).clicked()
@@ -52,7 +52,7 @@ pub(super) fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog
     });
     ui.add_space(8.0);
     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-        if ui.button(" Close ").clicked() {
+        if ui.button(format!(" {} ", crate::i18n::tr(ui, "Close"))).clicked() {
             *open = false;
         }
     });
