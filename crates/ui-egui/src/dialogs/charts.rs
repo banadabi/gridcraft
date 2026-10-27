@@ -98,7 +98,7 @@ pub(super) fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut 
             let (rect, _) = ui.allocate_exact_size(vec2(360.0, 216.0), Sense::hover());
             ui.painter().rect_filled(rect, 2.0, Color32::WHITE);
             ui.painter().rect_stroke(rect, 2.0, Stroke::new(1.0, t.separator), StrokeKind::Inside);
-            let params = json!({"type": d.values.get("type").cloned().unwrap_or(Json::Null), "subtype": d.values.get("subtype").cloned().unwrap_or(Json::Null)});
+            let params = json!({"type": d.values.get("type").cloned().unwrap_or(Json::Null), "subtype": d.values.get("subtype").cloned().unwrap_or(Json::Null), "defaultTitle": app.ui.language.tr("Chart Title")});
             if let Some(doc) = app.session.active()
                 && let Ok((sheet, chart)) = gridcraft_engine::cmd::insert::build_chart(&app.session, &params)
             {

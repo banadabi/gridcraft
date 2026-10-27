@@ -562,8 +562,11 @@ pub(super) fn home(app: &mut SheetApp, ui: &mut Ui) {
 /// The AutoSum menu (Home › Editing and Formulas › Function Library): a function, or the Insert
 /// Function dialog.
 pub(super) fn autosum_menu(app: &mut SheetApp, ui: &mut Ui) {
-    for f in ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"] {
-        if ui.button(f).clicked() {
+    // Excel's AutoSum names (Toplam, Ortalama… in Turkish); English keeps the function names.
+    for (f, label) in
+        [("SUM", "AutoSum|SUM"), ("AVERAGE", "AutoSum|AVERAGE"), ("COUNT", "AutoSum|COUNT"), ("MAX", "AutoSum|MAX"), ("MIN", "AutoSum|MIN")]
+    {
+        if ui.button(crate::i18n::tr(ui, label)).clicked() {
             act(app, "formulas.autoSum", json!({"function": f}));
         }
     }
