@@ -125,7 +125,7 @@ pub(super) fn analysis_toolpak(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Di
     }
     let tool = d.values.get("tool").and_then(Json::as_str).unwrap_or("").to_string();
     let Some((_, label)) = TOOLS.iter().find(|(id, _)| *id == tool) else {
-        ui.label(egui::RichText::new("Analysis Tools").strong());
+        ui.label(egui::RichText::new(crate::i18n::tr(ui, "Analysis Tools")).strong());
         let pick = d.values.get("pick").and_then(Json::as_str).unwrap_or("").to_string();
         let mut chosen = false;
         egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
@@ -152,7 +152,7 @@ pub(super) fn analysis_toolpak(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Di
     d.fields = toolpak_fields(&tool);
     form_fields(ui, d);
     ui.separator();
-    ui.label(egui::RichText::new("Output options").strong());
+    ui.label(egui::RichText::new(crate::i18n::tr(ui, "Output options")).strong());
     let to = d.values.get("outputTo").and_then(Json::as_str).unwrap_or("newSheet").to_string();
     for (key, choice, text_label) in [("output", "range", "Output Range:"), ("newSheet", "newSheet", "New Worksheet Ply:")] {
         ui.horizontal(|ui| {
@@ -188,7 +188,7 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
     ui.horizontal(|ui| {
         ui.label(crate::i18n::tr(ui, "To:"));
         for (g, label) in [("max", "Max"), ("min", "Min"), ("value", "Value Of:")] {
-            if ui.radio(goal == g, label).clicked() {
+            if ui.radio(goal == g, crate::i18n::tr(ui, label)).clicked() {
                 d.values.insert("goal".into(), json!(g));
             }
         }
@@ -242,7 +242,7 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
                 d.values.insert("newRhs".into(), json!(""));
             }
         }
-        if ui.add_enabled(d.list_index < list.len(), egui::Button::new("Delete")).clicked() {
+        if ui.add_enabled(d.list_index < list.len(), egui::Button::new(crate::i18n::tr(ui, "Delete"))).clicked() {
             let mut list = list.clone();
             if d.list_index < list.len() {
                 list.remove(d.list_index);
@@ -251,7 +251,7 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
         }
     });
     let mut nonneg = d.values.get("nonNegative").and_then(Json::as_bool).unwrap_or(true);
-    if ui.checkbox(&mut nonneg, "Make Unconstrained Variables Non-Negative").changed() {
+    if ui.checkbox(&mut nonneg, crate::i18n::tr(ui, "Make Unconstrained Variables Non-Negative")).changed() {
         d.values.insert("nonNegative".into(), json!(nonneg));
     }
     let method = text(d, "method");
@@ -263,10 +263,10 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
             _ => "GRG Nonlinear",
         };
         craft_ui::ComboBox::from_id_salt("solverMethod")
-            .selected_text(label(&method))
+            .selected_text(lang.tr(label(&method)))
             .show_ui(ui, |ui| {
                 for m in ["grg", "simplex", "evolutionary"] {
-                    if ui.selectable_label(method == m, label(m)).clicked() {
+                    if ui.selectable_label(method == m, lang.tr(label(m))).clicked() {
                         d.values.insert("method".into(), json!(m));
                     }
                 }
@@ -303,10 +303,10 @@ pub(super) fn solver_results(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dial
     let restore = d.values.get("restore").and_then(Json::as_bool).unwrap_or(false);
     if changed {
         ui.add_space(4.0);
-        if ui.radio(!restore, "Keep Solver Solution").clicked() {
+        if ui.radio(!restore, crate::i18n::tr(ui, "Keep Solver Solution")).clicked() {
             d.values.insert("restore".into(), json!(false));
         }
-        if ui.radio(restore, "Restore Original Values").clicked() {
+        if ui.radio(restore, crate::i18n::tr(ui, "Restore Original Values")).clicked() {
             d.values.insert("restore".into(), json!(true));
         }
     }

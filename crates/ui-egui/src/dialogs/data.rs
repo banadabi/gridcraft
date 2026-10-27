@@ -259,7 +259,7 @@ pub(super) fn sort(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confir
     {
         levels.remove(i);
     }
-    if ui.button("+ Add Level").clicked() {
+    if ui.button(crate::i18n::tr(ui, "+ Add Level")).clicked() {
         let used: Vec<String> = levels.iter().filter_map(|l| l.get("column").and_then(Json::as_str).map(str::to_string)).collect();
         let next = columns
             .iter()

@@ -21,14 +21,22 @@ pub(super) fn command_search(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dial
         d.focus_initialized = true;
     }
 
-    let q = d.search.to_ascii_lowercase();
+    // Labels and menu paths in the interface language; the search also matches the English label
+    // and the command id, so `bold` finds Kalın in Turkish.
+    let lang = app.ui.language;
+    let q = d.search.to_lowercase();
     let cmds: Vec<(String, String, String)> = app
         .session
         .commands()
         .into_iter()
         .filter(|c| c.enabled)
-        .filter(|c| q.is_empty() || c.label.to_ascii_lowercase().contains(&q) || c.id.to_ascii_lowercase().contains(&q))
-        .map(|c| (c.id.to_string(), c.label.to_string(), c.menu.join(" › ")))
+        .map(|c| {
+            (c.id.to_string(), c.label.to_string(), lang.tr(&c.label).to_string(), c.menu.iter().map(|m| lang.tr(m)).collect::<Vec<_>>().join(" › "))
+        })
+        .filter(|(id, english, label, _)| {
+            q.is_empty() || label.to_lowercase().contains(&q) || english.to_lowercase().contains(&q) || id.to_ascii_lowercase().contains(&q)
+        })
+        .map(|(id, _, label, menu)| (id, label, menu))
         .take(40)
         .collect();
 

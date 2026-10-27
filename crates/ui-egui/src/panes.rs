@@ -56,7 +56,7 @@ fn comments(app: &mut SheetApp, ui: &mut Ui) {
     let Some(sh) = d.wb.active() else { return };
     let list: Vec<(String, gridcraft_engine::model::Comment)> = sh.comments.iter().map(|(c, m)| (c.a1(), m.clone())).collect();
     if list.is_empty() {
-        ui.label(egui::RichText::new("No comments on this sheet yet. Select a cell and choose New Comment.").italics());
+        ui.label(egui::RichText::new(crate::i18n::tr(ui, "No comments on this sheet yet. Select a cell and choose New Comment.")).italics());
     }
     let t = crate::theme::Tokens::get(ui.ctx());
     for (cell, c) in list {
@@ -74,7 +74,7 @@ fn comments(app: &mut SheetApp, ui: &mut Ui) {
                     }
                     ui.label(egui::RichText::new(&c.author).color(t.text_dim));
                     if c.resolved {
-                        ui.label(egui::RichText::new("Resolved").small().color(t.accent));
+                        ui.label(egui::RichText::new(crate::i18n::tr(ui, "Resolved")).small().color(t.accent));
                     }
                 });
                 ui.label(&c.text);
@@ -90,7 +90,7 @@ fn comments(app: &mut SheetApp, ui: &mut Ui) {
                         if ui.small_button(crate::i18n::tr(ui, "Delete")).clicked() {
                             app.run_or_alert("review.deleteComment", json!({"cell": cell}));
                         }
-                        if ui.small_button(if c.resolved { "Reopen" } else { "Resolve" }).clicked() {
+                        if ui.small_button(crate::i18n::tr(ui, if c.resolved { "Reopen" } else { "Resolve" })).clicked() {
                             app.run_or_alert("review.resolveComment", json!({"cell": cell, "resolved": !c.resolved}));
                         }
                         let send = ui.small_button(crate::i18n::tr(ui, "Send")).clicked();
@@ -142,7 +142,7 @@ fn selection(app: &mut SheetApp, ui: &mut Ui) {
     let list = app.session.run("arrange.selectionPane", json!({})).unwrap_or(Json::Null);
     let items = list.as_array().cloned().unwrap_or_default();
     if items.is_empty() {
-        ui.label(egui::RichText::new("There are no shapes, pictures or charts on this sheet.").italics());
+        ui.label(egui::RichText::new(crate::i18n::tr(ui, "There are no shapes, pictures or charts on this sheet.")).italics());
     }
     for it in items.iter().rev() {
         let kind = it["kind"].as_str().unwrap_or("").to_string();
@@ -168,7 +168,7 @@ fn selection(app: &mut SheetApp, ui: &mut Ui) {
 /// Draws the chart format pane: title, type, legend, elements/axis titles, series colors, palettes/layouts and size.
 fn format_chart(app: &mut SheetApp, ui: &mut Ui) {
     let Some(id) = app.selected_chart else {
-        ui.label(egui::RichText::new("Select a chart to format it.").italics());
+        ui.label(egui::RichText::new(crate::i18n::tr(ui, "Select a chart to format it.")).italics());
         return;
     };
     let Some(chart) = app.session.active().and_then(|d| d.wb.active().and_then(|s| s.charts.iter().find(|c| c.id == id).cloned())) else {
@@ -176,13 +176,13 @@ fn format_chart(app: &mut SheetApp, ui: &mut Ui) {
         return;
     };
     let theme = app.session.active().map(|d| d.wb.theme.clone()).unwrap_or_default();
-    ui.collapsing("Chart Title", |ui| {
+    ui.collapsing(crate::i18n::tr(ui, "Chart Title"), |ui| {
         let field = egui::Id::unique(("gridcraft.chart_title", id));
         if let Some(title) = crate::widgets::committed_text(ui, field, chart.title.as_deref().unwrap_or(""), None) {
             app.run_or_alert("chart.set", json!({"chart": id, "title": title}));
         }
     });
-    ui.collapsing("Chart Type", |ui| {
+    ui.collapsing(crate::i18n::tr(ui, "Chart Type"), |ui| {
         ui.horizontal_wrapped(|ui| {
             for (l, k, s) in [
                 ("Column", "column", ""),
@@ -202,29 +202,29 @@ fn format_chart(app: &mut SheetApp, ui: &mut Ui) {
                 ("Radar", "radar", ""),
             ] {
                 let cur = chart.kind == gridcraft_engine::cmd::insert::chart_kind(k, s);
-                if ui.selectable_label(cur, l).clicked() {
+                if ui.selectable_label(cur, crate::i18n::tr(ui, l)).clicked() {
                     app.run_or_alert("chart.set", json!({"chart": id, "type": k, "subtype": s}));
                 }
             }
         });
     });
-    ui.collapsing("Legend", |ui| {
+    ui.collapsing(crate::i18n::tr(ui, "Legend"), |ui| {
         ui.horizontal(|ui| {
             for (l, v) in [("None", "none"), ("Bottom", "bottom"), ("Top", "top"), ("Left", "left"), ("Right", "right")] {
                 let cur = format!("{:?}", chart.legend).eq_ignore_ascii_case(v);
-                if ui.selectable_label(cur, l).clicked() {
+                if ui.selectable_label(cur, crate::i18n::tr(ui, l)).clicked() {
                     app.run_or_alert("chart.set", json!({"chart": id, "legend": v}));
                 }
             }
         });
     });
-    ui.collapsing("Elements", |ui| {
+    ui.collapsing(crate::i18n::tr(ui, "Elements"), |ui| {
         let mut dl = chart.data_labels;
-        if ui.checkbox(&mut dl, "Data Labels").changed() {
+        if ui.checkbox(&mut dl, crate::i18n::tr(ui, "Data Labels")).changed() {
             app.run_or_alert("chart.set", json!({"chart": id, "dataLabels": dl}));
         }
         let mut gl = chart.gridlines;
-        if ui.checkbox(&mut gl, "Gridlines").changed() {
+        if ui.checkbox(&mut gl, crate::i18n::tr(ui, "Gridlines")).changed() {
             app.run_or_alert("chart.set", json!({"chart": id, "gridlines": gl}));
         }
         ui.horizontal(|ui| {
@@ -242,7 +242,7 @@ fn format_chart(app: &mut SheetApp, ui: &mut Ui) {
             }
         });
     });
-    ui.collapsing("Series", |ui| {
+    ui.collapsing(crate::i18n::tr(ui, "Series"), |ui| {
         let data = app.session.active().map(|d| gridcraft_chart::resolve(&d.wb, d.wb.active_sheet(), &chart));
         for (i, s) in chart.series.iter().enumerate() {
             let name = data.as_ref().and_then(|d| d.series.get(i)).map(|x| x.name.clone()).unwrap_or_else(|| format!("Series {}", i + 1));
@@ -265,7 +265,7 @@ fn format_chart(app: &mut SheetApp, ui: &mut Ui) {
             });
         }
     });
-    ui.collapsing("Colors & Layout", |ui| {
+    ui.collapsing(crate::i18n::tr(ui, "Colors & Layout"), |ui| {
         ui.horizontal_wrapped(|ui| {
             for p in ["colorful", "monochrome", "accent1", "accent2", "accent3", "accent4", "accent5", "accent6"] {
                 if ui.button(p).clicked() {
@@ -281,7 +281,7 @@ fn format_chart(app: &mut SheetApp, ui: &mut Ui) {
             }
         });
     });
-    ui.collapsing("Size", |ui| {
+    ui.collapsing(crate::i18n::tr(ui, "Size"), |ui| {
         // Keep the value being typed or dragged between frames; reloading it from the chart every frame threw the edit away.
         let draft = egui::Id::unique(("gridcraft.chart_size_draft", id));
         let (mut w, mut h) = ui.data_mut(|d| d.get_temp::<(f32, f32)>(draft)).unwrap_or((chart.anchor.width, chart.anchor.height));

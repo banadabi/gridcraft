@@ -217,7 +217,7 @@ pub fn contributors_ui(ui: &mut egui::Ui) {
     ui.horizontal_wrapped(|ui| {
         ui.label("Show");
         for m in NameMode::ALL {
-            if ui.selectable_label(v.names == m, m.label()).clicked() {
+            if ui.selectable_label(v.names == m, crate::i18n::tr(ui, m.label())).clicked() {
                 v.names = m;
             }
         }
@@ -235,10 +235,10 @@ pub fn contributors_ui(ui: &mut egui::Ui) {
             v.ascending = !v.ascending;
         }
         ui.separator();
-        if ui.selectable_label(!v.table, "Grab bag").clicked() {
+        if ui.selectable_label(!v.table, crate::i18n::tr(ui, "Grab bag")).clicked() {
             v.table = false;
         }
-        if ui.selectable_label(v.table, "Table").clicked() {
+        if ui.selectable_label(v.table, crate::i18n::tr(ui, "Table")).clicked() {
             v.table = true;
         }
     });

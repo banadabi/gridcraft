@@ -10,7 +10,7 @@ pub(super) fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog
         if ui.button(crate::i18n::tr(ui, "New…")).clicked() {
             app.open_dialog("defineName", json!({}));
         }
-        if ui.add_enabled(selected.is_some(), egui::Button::new("Edit…")).clicked()
+        if ui.add_enabled(selected.is_some(), egui::Button::new(crate::i18n::tr(ui, "Edit…"))).clicked()
             && let Some(n) = &selected
         {
             app.open_dialog(
@@ -21,7 +21,7 @@ pub(super) fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog
                 }),
             );
         }
-        if ui.add_enabled(selected.is_some(), egui::Button::new("Delete")).clicked()
+        if ui.add_enabled(selected.is_some(), egui::Button::new(crate::i18n::tr(ui, "Delete"))).clicked()
             && let Some(n) = &selected
         {
             app.run_or_alert("formulas.deleteName", json!({"name": field(n, "name"), "scope": field(n, "scope")}));
@@ -36,7 +36,7 @@ pub(super) fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog
             ui.strong("Scope");
             ui.end_row();
             if names.is_empty() {
-                ui.label(egui::RichText::new("No names defined").italics());
+                ui.label(egui::RichText::new(crate::i18n::tr(ui, "No names defined")).italics());
                 ui.end_row();
             }
             for (i, n) in names.iter().enumerate() {

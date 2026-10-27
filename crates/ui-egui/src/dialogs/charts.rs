@@ -60,7 +60,7 @@ fn chart_icon(t: &str) -> Icon {
 pub(super) fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) {
     ui.horizontal(|ui| {
         for tab in ["Recommended Charts", "All Charts"] {
-            if ui.selectable_label(d.tab == tab, tab).clicked() && d.tab != tab {
+            if ui.selectable_label(d.tab == tab, crate::i18n::tr(ui, tab)).clicked() && d.tab != tab {
                 d.tab = tab.to_string();
                 select_chart(d, 0);
             }
@@ -78,7 +78,7 @@ pub(super) fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut 
                         .horizontal(|ui| {
                             let (r, _) = ui.allocate_exact_size(vec2(22.0, 22.0), Sense::hover());
                             icons::paint(ui.painter(), r.shrink(2.0), chart_icon(kind), t.text);
-                            ui.selectable_label(i == d.list_index, label.as_str())
+                            ui.selectable_label(i == d.list_index, crate::i18n::tr(ui, label))
                         })
                         .inner;
                     if resp.clicked() {
@@ -94,7 +94,7 @@ pub(super) fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut 
         ui.add_space(12.0);
         ui.vertical(|ui| {
             let label = choices.get(d.list_index).map(|c| c.2.clone()).unwrap_or_default();
-            ui.strong(label);
+            ui.strong(crate::i18n::tr(ui, &label));
             let (rect, _) = ui.allocate_exact_size(vec2(360.0, 216.0), Sense::hover());
             ui.painter().rect_filled(rect, 2.0, Color32::WHITE);
             ui.painter().rect_stroke(rect, 2.0, Stroke::new(1.0, t.separator), StrokeKind::Inside);
@@ -151,7 +151,7 @@ pub(super) fn select_data(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog,
                     if ui.small_button(crate::i18n::tr(ui, "Keep")).clicked() {
                         remove.retain(|x| *x != i);
                     }
-                } else if ui.add_enabled(kept > 1, egui::Button::new("Remove").small()).clicked() {
+                } else if ui.add_enabled(kept > 1, egui::Button::new(crate::i18n::tr(ui, "Remove")).small()).clicked() {
                     remove.push(i);
                 }
             });
