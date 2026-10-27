@@ -31,7 +31,7 @@ pub(super) fn command_search(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dial
         .into_iter()
         .filter(|c| c.enabled)
         .map(|c| {
-            (c.id.to_string(), c.label.to_string(), lang.tr(&c.label).to_string(), c.menu.iter().map(|m| lang.tr(m)).collect::<Vec<_>>().join(" › "))
+            (c.id.to_string(), c.label.to_string(), lang.tr(c.label).to_string(), c.menu.iter().map(|m| lang.tr(m)).collect::<Vec<_>>().join(" › "))
         })
         .filter(|(id, english, label, _)| {
             q.is_empty() || label.to_lowercase().contains(&q) || english.to_lowercase().contains(&q) || id.to_ascii_lowercase().contains(&q)
