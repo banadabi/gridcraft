@@ -2,16 +2,17 @@ use super::show::{form_fields, ok_cancel};
 use super::*;
 
 pub(super) fn goal_seek(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
+    let lang = crate::i18n::current(ui.ctx());
     let get = |k: &str| d.values.get(k).and_then(Json::as_str).unwrap_or("").to_string();
     let (mut set, mut to, mut changing) = (get("set"), get("to"), get("changing"));
     egui::Grid::new("gs").show(ui, |ui| {
-        ui.label("Set cell:");
+        ui.label(lang.tr("Set cell:"));
         ui.text_edit_singleline(&mut set);
         ui.end_row();
-        ui.label("To value:");
+        ui.label(lang.tr("To value:"));
         ui.text_edit_singleline(&mut to);
         ui.end_row();
-        ui.label("By changing cell:");
+        ui.label(lang.tr("By changing cell:"));
         ui.text_edit_singleline(&mut changing);
         ui.end_row();
     });
@@ -22,7 +23,9 @@ pub(super) fn goal_seek(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, c
     ok_cancel(ui, confirm, &mut open);
     if *confirm {
         match app.run("data.goalSeek", json!({"set": set, "to": to.parse::<f64>().unwrap_or(0.0), "changing": changing})) {
-            Ok(r) => app.toast = Some((format!("Goal Seeking found a solution: {}", r["value"]), crate::now_ms())),
+            Ok(r) => {
+                app.toast = Some((lang.tr("Goal Seeking found a solution: {value}").replace("{value}", &r["value"].to_string()), crate::now_ms()))
+            }
             Err(e) => app.message = Some(("Goal Seek".into(), crate::clean_error(&e))),
         }
     }
@@ -181,22 +184,22 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
         }
     };
     ui.horizontal(|ui| {
-        ui.label("Set Objective:");
+        ui.label(lang.tr("Set Objective:"));
         edit(ui, d, "objective", 200.0, "Set Objective:");
     });
     let goal = text(d, "goal");
     ui.horizontal(|ui| {
-        ui.label("To:");
+        ui.label(lang.tr(if lang == crate::i18n::Language::Tr { "Solver|To:" } else { "To:" }));
         for (g, label) in [("max", "Max"), ("min", "Min"), ("value", "Value Of:")] {
-            if ui.radio(goal == g, label).clicked() {
+            if ui.radio(goal == g, lang.tr(label)).clicked() {
                 d.values.insert("goal".into(), json!(g));
             }
         }
         edit(ui, d, "value", 80.0, "Value Of:");
     });
-    ui.label("By Changing Variable Cells:");
+    ui.label(lang.tr("By Changing Variable Cells:"));
     edit(ui, d, "variables", 420.0, "By Changing Variable Cells:");
-    ui.label("Subject to the Constraints:");
+    ui.label(lang.tr("Subject to the Constraints:"));
     let list: Vec<String> = d
         .values
         .get("constraints")
@@ -231,7 +234,7 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
         if !matches!(op.as_str(), "int" | "bin") {
             edit(ui, d, "newRhs", 110.0, "Constraint Value");
         }
-        if ui.button("Add").clicked() {
+        if ui.button(lang.tr("Add")).clicked() {
             let lhs = text(d, "newLhs");
             if !lhs.trim().is_empty() {
                 let rhs = if matches!(op.as_str(), "int" | "bin") { String::new() } else { format!(" {}", text(d, "newRhs").trim()) };
@@ -242,7 +245,7 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
                 d.values.insert("newRhs".into(), json!(""));
             }
         }
-        if ui.add_enabled(d.list_index < list.len(), egui::Button::new("Delete")).clicked() {
+        if ui.add_enabled(d.list_index < list.len(), egui::Button::new(lang.tr("Delete"))).clicked() {
             let mut list = list.clone();
             if d.list_index < list.len() {
                 list.remove(d.list_index);
@@ -251,22 +254,22 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
         }
     });
     let mut nonneg = d.values.get("nonNegative").and_then(Json::as_bool).unwrap_or(true);
-    if ui.checkbox(&mut nonneg, "Make Unconstrained Variables Non-Negative").changed() {
+    if ui.checkbox(&mut nonneg, lang.tr("Make Unconstrained Variables Non-Negative")).changed() {
         d.values.insert("nonNegative".into(), json!(nonneg));
     }
     let method = text(d, "method");
     ui.horizontal(|ui| {
-        ui.label("Select a Solving Method:");
+        ui.label(lang.tr("Select a Solving Method:"));
         let label = |m: &str| match m {
             "simplex" => "Simplex LP",
             "evolutionary" => "Evolutionary",
             _ => "GRG Nonlinear",
         };
         craft_ui::ComboBox::from_id_salt("solverMethod")
-            .selected_text(label(&method))
+            .selected_text(lang.tr(label(&method)))
             .show_ui(ui, |ui| {
                 for m in ["grg", "simplex", "evolutionary"] {
-                    if ui.selectable_label(method == m, label(m)).clicked() {
+                    if ui.selectable_label(method == m, lang.tr(label(m))).clicked() {
                         d.values.insert("method".into(), json!(m));
                     }
                 }
@@ -275,21 +278,21 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
             .accessible_name(lang.tr("Select a Solving Method:"));
     });
     ui.label(
-        egui::RichText::new(match method.as_str() {
+        egui::RichText::new(lang.tr(match method.as_str() {
             "simplex" => "Simplex LP: for linear models; integer and binary constraints by branch and bound.",
             "evolutionary" => "Evolutionary: a genetic search for models that aren't smooth; every variable cell needs bounds.",
             _ => "GRG Nonlinear: a local optimum of a smooth model, from the current values.",
-        })
+        }))
         .small(),
     );
     ui.add_space(8.0);
     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
         let t = crate::theme::Tokens::get(ui.ctx());
-        let solve = ui.add(egui::Button::new(egui::RichText::new("  Solve  ").color(t.on_accent)).fill(t.accent));
+        let solve = ui.add(egui::Button::new(egui::RichText::new(format!("  {}  ", lang.tr("Solve"))).color(t.on_accent)).fill(t.accent));
         if solve.clicked() && !text(d, "objective").trim().is_empty() {
             *confirm = true;
         }
-        if ui.button(" Close ").clicked() {
+        if ui.button(format!(" {} ", lang.tr("Close"))).clicked() {
             *open = false;
         }
     });
@@ -297,16 +300,17 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
 
 /// Solver Results: the outcome, and keeping or restoring the variable cells.
 pub(super) fn solver_results(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &mut bool) {
+    let lang = crate::i18n::current(ui.ctx());
     let message = d.values.get("message").and_then(Json::as_str).unwrap_or("").to_string();
     ui.label(message);
     let changed = d.values.get("changed").and_then(Json::as_bool).unwrap_or(false);
     let restore = d.values.get("restore").and_then(Json::as_bool).unwrap_or(false);
     if changed {
         ui.add_space(4.0);
-        if ui.radio(!restore, "Keep Solver Solution").clicked() {
+        if ui.radio(!restore, lang.tr("Keep Solver Solution")).clicked() {
             d.values.insert("restore".into(), json!(false));
         }
-        if ui.radio(restore, "Restore Original Values").clicked() {
+        if ui.radio(restore, lang.tr("Restore Original Values")).clicked() {
             d.values.insert("restore".into(), json!(true));
         }
     }
@@ -314,10 +318,10 @@ pub(super) fn solver_results(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dial
     let solved = d.values.get("values").and_then(Json::as_object).is_some_and(|v| !v.is_empty());
     if solved {
         ui.add_space(4.0);
-        ui.label("Reports:");
+        ui.label(lang.tr("Reports:"));
         for (key, label) in [("answerReport", "Answer"), ("limitsReport", "Limits")] {
             let mut on = d.values.get(key).and_then(Json::as_bool).unwrap_or(false);
-            if ui.checkbox(&mut on, label).changed() {
+            if ui.checkbox(&mut on, lang.tr(label)).changed() {
                 d.values.insert(key.into(), json!(on));
             }
         }

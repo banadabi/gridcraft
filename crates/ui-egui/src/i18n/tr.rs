@@ -1617,6 +1617,18 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "AutoSum|COUNT" => "Sayıları Say",
         "AutoSum|MAX" => "En Büyük",
         "AutoSum|MIN" => "En Küçük",
+        "Answer" => "Yanıt",
+        "Limits" => "Sınırlar",
+        "Solver|To:" => "Hedef:",
+        "Simplex LP: for linear models; integer and binary constraints by branch and bound." => {
+            "Simplex LP: doğrusal modeller için; tam sayı ve ikili kısıtlar dallanma ve sınırlandırma yöntemiyle çözülür."
+        }
+        "Evolutionary: a genetic search for models that aren't smooth; every variable cell needs bounds." => {
+            "Evrimsel: düzgün olmayan modeller için genetik arama; her değişken hücresi için sınır gerekir."
+        }
+        "GRG Nonlinear: a local optimum of a smooth model, from the current values." => {
+            "GRG Doğrusal Olmayan: geçerli değerlerden başlayarak düzgün bir modelin yerel en iyi çözümünü bulur."
+        }
         _ => return None,
     })
 }
