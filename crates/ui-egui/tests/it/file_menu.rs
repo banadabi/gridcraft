@@ -30,6 +30,24 @@ fn page(h: &egui_kittest::Harness<'static, SheetApp>) -> Option<&'static str> {
 }
 
 #[test]
+fn turkish_new_workbook_tiles_translate_sample_titles_without_changing_selection() {
+    let mut h = harness(Services::default());
+    h.state_mut().ui.language = Language::Tr;
+    h.run_steps(2);
+    h.get_by_label(Language::Tr.tr("File")).click();
+    h.run_steps(3);
+    h.get_by_role_and_label(egui::accesskit::Role::Button, Language::Tr.tr("New")).click();
+    h.run_steps(3);
+    for title in ["Household Budget", "Quarterly Sales Dashboard", "Gradebook"] {
+        assert!(h.query_by_label(Language::Tr.tr(title)).is_some(), "sample tile {title} should be translated");
+    }
+    h.get_by_role_and_label(egui::accesskit::Role::Button, Language::Tr.tr("Household Budget")).click();
+    h.run_steps(3);
+    assert_eq!(h.state().session.documents().len(), 2, "the translated tile still creates the sample workbook");
+    assert!(h.state().backstage.is_none());
+}
+
+#[test]
 fn new_and_open_from_the_file_tab_keep_the_ribbon_as_it_was() {
     let opened = Arc::new(Mutex::new(0));
     let capture = opened.clone();

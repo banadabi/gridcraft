@@ -1708,6 +1708,8 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "GRG Nonlinear: a local optimum of a smooth model, from the current values." => {
             "GRG Doğrusal Olmayan: geçerli değerlerden başlayarak düzgün bir modelin yerel en iyi çözümünü bulur."
         }
+        "Circular References: {cell}" => "Döngüsel Başvurular: {cell}",
+        "Formula Bar|Enter" => "Girişi Onayla",
         _ => return None,
     })
 }

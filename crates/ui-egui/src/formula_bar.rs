@@ -68,6 +68,7 @@ pub struct EditorInfo {
 /// Draws the formula bar: line-count-driven height, Name Box, cancel/enter/Fx buttons, the editable field, muted read-only spill text and the expansion chevron.
 pub fn show(app: &mut SheetApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
+    let lang = app.ui.language;
     let font = theme::ui_font(13.0);
     let row_h = ui.ctx().fonts_mut(|f| f.row_height(&font));
     let last = BarLayout::get(ui.ctx());
@@ -88,14 +89,14 @@ pub fn show(app: &mut SheetApp, ui: &mut egui::Ui) {
                 ui.add_space(4.0);
                 let editing = app.editor.is_some();
                 let c = if editing { t.text } else { t.text_disabled };
-                let cancel = crate::widgets::icon_button(ui, Icon::Close, c, "Cancel", vec2(22.0, 24.0));
+                let cancel = crate::widgets::icon_button(ui, Icon::Close, c, lang.tr("Cancel"), vec2(22.0, 24.0));
                 if cancel.clicked() && editing {
                     app.cancel_edit();
                 }
-                if crate::widgets::icon_button(ui, Icon::Check, c, "Enter", vec2(22.0, 24.0)).clicked() && editing {
+                if crate::widgets::icon_button(ui, Icon::Check, c, lang.tr("Formula Bar|Enter"), vec2(22.0, 24.0)).clicked() && editing {
                     app.commit_edit(0, 0, false, false);
                 }
-                let fx = crate::widgets::icon_button(ui, Icon::Fx, t.text, "Insert Function", vec2(26.0, 24.0));
+                let fx = crate::widgets::icon_button(ui, Icon::Fx, t.text, lang.tr("Insert Function"), vec2(26.0, 24.0));
                 if fx.clicked() {
                     app.open_dialog("insertFunction", json!({}));
                 }
