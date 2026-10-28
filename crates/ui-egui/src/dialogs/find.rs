@@ -139,7 +139,7 @@ pub(super) fn go_to(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confi
         ui.text_edit_singleline(&mut r).labelled_by(label.id).request_focus();
     });
     d.values.insert("reference".into(), json!(r.clone()));
-    if ui.button("Special…").clicked() {
+    if ui.button(lang.tr("Special…")).clicked() {
         app.open_dialog("goToSpecial", json!({}));
         return;
     }

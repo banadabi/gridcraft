@@ -113,3 +113,21 @@ fn solver_results_translate_choices_and_keep_report_ids() {
     assert_eq!(values["restore"], true);
     assert_eq!(values["answerReport"], true);
 }
+
+#[test]
+fn analysis_toolpak_uses_translated_tool_names_and_output_controls() {
+    for language in [Language::En, Language::Tr] {
+        let mut h = harness(language);
+        h.state_mut().open_dialog("analysisToolPak", json!({}));
+        h.run_steps(3);
+        h.get_by_label(language.tr("Analysis Tools"));
+        h.get_by_label(language.tr("Descriptive Statistics")).click();
+        h.run_steps(2);
+        assert_eq!(h.state().dialog.as_ref().unwrap().values["pick"], "descriptive");
+        h.state_mut().open_dialog("analysisToolPak", json!({"tool": "descriptive"}));
+        h.run_steps(3);
+        for label in ["Output options", "Output Range:", "New Worksheet Ply:"] {
+            h.get_by_label(language.tr(label));
+        }
+    }
+}

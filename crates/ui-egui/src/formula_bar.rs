@@ -161,7 +161,11 @@ fn active_input(app: &SheetApp) -> String {
     let Some(sh) = d.wb.active() else { return String::new() };
     let a = sh.merge_at(d.selection.active).map(|m| m.start).unwrap_or(d.selection.active);
     if let Some(picture) = sh.cell_pictures.get(&a) {
-        return if picture.alt.is_empty() { "Picture in cell".into() } else { format!("Picture: {}", picture.alt) };
+        return if picture.alt.is_empty() {
+            app.ui.language.tr("Picture in cell").into()
+        } else {
+            app.ui.language.tr("Picture: {alt}").replace("{alt}", &picture.alt)
+        };
     }
     if let Some(anchor) = sh.spill_anchor(a) {
         if gridcraft_engine::display::formula_hidden(&d.wb, sh, anchor) {
@@ -239,9 +243,10 @@ fn name_box(app: &mut SheetApp, ui: &mut egui::Ui, t: &Tokens) -> Rect {
     let mb = Rect::from_min_size(pos2(rect.right() - 16.0, rect.top() + 4.0), vec2(14.0, 16.0));
     icons::paint(ui.painter(), mb, Icon::Chevron, t.text_dim);
     let r = ui.interact(mb, id.with("drop"), Sense::click());
+    r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, ui.is_enabled(), app.ui.language.tr("Defined Names")));
     egui::Popup::menu(&r).show(|ui| {
         if names.is_empty() {
-            ui.label(egui::RichText::new("No names defined").italics());
+            ui.label(egui::RichText::new(app.ui.language.tr("No names defined")).italics());
         }
         for n in names {
             if ui.button(&n).clicked() {
