@@ -85,3 +85,25 @@ fn evaluate_formula_shows_the_result_or_why_there_is_none() {
     assert!(h.query_all_by_label("3").count() > before, "the result 3, not 3.0");
     no_raw_json(&h, &["steps", "expression"]);
 }
+
+#[test]
+fn a_long_error_report_draws_its_first_rows_and_says_how_many_there_are() {
+    let mut h = crate::support::blank_harness(4);
+    // Far below the visible grid, so every #DIV/0! on screen is a report row.
+    for r in 1000..1250 {
+        h.state_mut().run("cell.set", json!({"cell": format!("A{r}"), "input": "=1/0"})).unwrap();
+    }
+    open(&mut h, "errorChecking");
+    assert!(h.query_by_label("Showing the first 200 of 250.").is_some());
+    assert_eq!(h.query_all_by_label("#DIV/0!").count(), 200);
+}
+
+#[test]
+fn a_long_formula_wraps_inside_its_column() {
+    let mut h = crate::support::blank_harness(4);
+    let formula = format!("=LEN(\"{}\")/0", "x".repeat(300));
+    h.state_mut().run("cell.set", json!({"cell": "A1000", "input": formula})).unwrap();
+    open(&mut h, "errorChecking");
+    let width = h.get_by_label(&formula).rect().width();
+    assert!(width <= 281.0, "the formula column is {width} wide");
+}
