@@ -77,6 +77,16 @@ fn page(ui: &mut egui::Ui, lang: Language, id: &str, total: usize) -> usize {
     page
 }
 
+/// A report command's error in the interface language. The engine's "no workbook open" comes
+/// wrapped as "command `…` is not available right now: no workbook open", which `tr_error` can't
+/// strip, so it is mapped to the catalogs' own sentence first.
+fn error_message(lang: Language, error: &str) -> String {
+    if error == "no workbook open" || error.ends_with(": no workbook open") {
+        return lang.tr("No workbook is open.").to_string();
+    }
+    lang.tr_error(error)
+}
+
 fn list(v: &Json) -> &[Json] {
     v.as_array().map(Vec::as_slice).unwrap_or_default()
 }
@@ -86,7 +96,7 @@ pub(super) fn report(ui: &mut egui::Ui, name: &str, r: &Json) {
     let lang = crate::i18n::current(ui.ctx());
     // A failed command (no formula to evaluate, no workbook open) says why, not "nothing found".
     if let Some(e) = r.get("error") {
-        ui.label(lang.tr_error(&text(e)));
+        ui.label(error_message(lang, &text(e)));
         return;
     }
     egui::ScrollArea::vertical().max_height(360.0).show(ui, |ui| match name {
@@ -166,4 +176,18 @@ pub(super) fn report(ui: &mut egui::Ui, name: &str, r: &Json) {
             });
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_no_workbook_error_reads_in_the_interface_language() {
+        let unavailable = "command `formulas.errorChecking` is not available right now: no workbook open";
+        assert_eq!(error_message(Language::De, unavailable), "Es ist keine Arbeitsmappe geöffnet.");
+        assert_eq!(error_message(Language::De, "no workbook open"), "Es ist keine Arbeitsmappe geöffnet.");
+        assert_eq!(error_message(Language::En, unavailable), "No workbook is open.");
+        assert_eq!(error_message(Language::En, "The cell has no formula."), "The cell has no formula.");
+    }
 }
