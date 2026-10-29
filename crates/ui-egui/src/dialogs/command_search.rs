@@ -1,4 +1,4 @@
-use super::{Dialog, Key, SheetApp, json, vec2};
+use super::{Dialog, Key, SheetApp, json, tr, vec2};
 
 pub(super) fn command_search(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
     let (down, up, home, end, pgup, pgdn) = ui.input_mut(|i| {
@@ -12,21 +12,28 @@ pub(super) fn command_search(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dial
         )
     });
     let width = ui.available_width();
-    let r = ui.add(egui::TextEdit::singleline(&mut d.search).desired_width(width).hint_text("Type a command, e.g. freeze, chart, bold…"));
+    let r = ui.add(egui::TextEdit::singleline(&mut d.search).desired_width(width).hint_text(tr(ui, "Type a command, e.g. freeze, chart, bold…")));
 
     if !d.focus_initialized {
         r.request_focus();
         d.focus_initialized = true;
     }
 
-    let q = d.search.to_ascii_lowercase();
+    let language = app.ui.language;
+    let q = language.search_key(&d.search);
+    let canonical_query = d.search.to_lowercase();
     let cmds: Vec<(String, String, String)> = app
         .session
         .commands()
         .into_iter()
         .filter(|c| c.enabled)
-        .filter(|c| q.is_empty() || c.label.to_ascii_lowercase().contains(&q) || c.id.to_ascii_lowercase().contains(&q))
-        .map(|c| (c.id.to_string(), c.label.to_string(), c.menu.join(" › ")))
+        .filter(|c| {
+            q.is_empty()
+                || language.search_key(language.tr(c.label)).contains(&q)
+                || c.label.to_lowercase().contains(&canonical_query)
+                || c.id.to_lowercase().contains(&canonical_query)
+        })
+        .map(|c| (c.id.to_string(), language.tr(c.label).to_string(), c.menu.iter().map(|label| language.tr(label)).collect::<Vec<_>>().join(" › ")))
         .take(40)
         .collect();
 

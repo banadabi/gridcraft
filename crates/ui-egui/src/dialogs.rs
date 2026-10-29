@@ -13,6 +13,11 @@ use serde_json::{Map, Value as Json, json};
 use crate::SheetApp;
 use crate::theme;
 
+/// Translate interface chrome without touching workbook text or command parameters.
+fn tr<'a>(ui: &egui::Ui, text: &'a str) -> &'a str {
+    crate::i18n::current(ui.ctx()).tr(text)
+}
+
 mod about;
 mod analysis;
 mod charts;
