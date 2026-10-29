@@ -286,12 +286,15 @@ fn the_save_changes_dialog_is_translated() {
         for label in ["Don't Save", "Cancel", "Save"] {
             let shown = language.tr(label);
             assert_ne!(shown, label, "{language:?}: {label} has no translation");
-            assert!(h.query_by_role_and_label(egui::accesskit::Role::Button, shown).is_some(), "{language:?}: no {shown} button");
+            // Another button may share the label (the window's own Cancel), so look for any.
+            assert!(h.query_all_by_role_and_label(egui::accesskit::Role::Button, shown).next().is_some(), "{language:?}: no {shown} button");
         }
         let question = language.tr("Do you want to save the changes you made to {title}?");
         let before = question.split("{title}").next().unwrap_or(question).trim();
         assert!(h.query_all_by_label_contains(before).next().is_some(), "{language:?}: the question is not translated");
-        click_commands(&mut h, language.tr("Cancel"));
+        // The dialog's Cancel is drawn last.
+        h.query_all_by_role_and_label(egui::accesskit::Role::Button, language.tr("Cancel")).last().unwrap().click();
+        h.run_steps(3);
         assert!(h.state().dialog.is_none());
     }
 }
