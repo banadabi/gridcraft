@@ -266,7 +266,7 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
         "ui.dialog.confirm" => match app.dialog.take() {
             Some(d) => match d.command {
                 Some(cmd) => {
-                    let params = crate::dialogs::build_params(&d);
+                    let params = crate::dialogs::build_params(&d, app.ui.language);
                     let home = app.ui_window();
                     let r = app.run(cmd, params);
                     if r.is_err() {
