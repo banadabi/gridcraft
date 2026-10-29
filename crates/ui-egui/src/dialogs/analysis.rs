@@ -113,14 +113,14 @@ pub(super) fn toolpak_defaults(sel: &str, tool: &str) -> Map<String, Json> {
 pub(super) fn analysis_toolpak(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) {
     use gridcraft_engine::cmd::analysis::TOOLS;
     if d.values.get("askOverwrite").and_then(Json::as_bool) == Some(true) {
-        ui.label("The output range already holds data. Replace it with the report?");
+        ui.label(crate::i18n::tr(ui, "The output range already holds data. Replace it with the report?"));
         ui.horizontal(|ui| {
-            if ui.button("Replace").clicked() {
+            if ui.button(crate::i18n::tr(ui, "Replace")).clicked() {
                 d.values.remove("askOverwrite");
                 d.values.insert("overwrite".into(), json!(true));
                 *confirm = true;
             }
-            if ui.button("Cancel").clicked() {
+            if ui.button(crate::i18n::tr(ui, "Cancel")).clicked() {
                 d.values.remove("askOverwrite");
             }
         });
