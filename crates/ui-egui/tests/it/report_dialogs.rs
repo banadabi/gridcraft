@@ -116,3 +116,15 @@ fn a_long_formula_wraps_inside_its_column() {
     let width = h.get_by_label(&formula).rect().width();
     assert!(width <= 281.0, "the formula column is {width} wide");
 }
+
+#[test]
+fn without_a_workbook_the_reports_keep_the_error_instead_of_finding_nothing() {
+    // The window always keeps a workbook; an embedding host or the control channel may not.
+    let mut app = crate::common::app(gridcraft_engine::Session::new());
+    assert!(app.session.active().is_none());
+    for name in ["statistics", "accessibility", "errorChecking"] {
+        app.open_dialog(name, json!({}));
+        let result = app.dialog.take().and_then(|d| d.result).unwrap_or_default();
+        assert!(result.get("error").is_some(), "{name}: {result}");
+    }
+}

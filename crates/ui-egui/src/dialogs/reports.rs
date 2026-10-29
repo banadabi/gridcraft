@@ -84,6 +84,11 @@ fn list(v: &Json) -> &[Json] {
 /// Draws the report dialog `name` from its engine result `r`.
 pub(super) fn report(ui: &mut egui::Ui, name: &str, r: &Json) {
     let lang = crate::i18n::current(ui.ctx());
+    // A failed command (no formula to evaluate, no workbook open) says why, not "nothing found".
+    if let Some(e) = r.get("error") {
+        ui.label(lang.tr_error(&text(e)));
+        return;
+    }
     egui::ScrollArea::vertical().max_height(360.0).show(ui, |ui| match name {
         "statistics" => {
             let sheet = &r["sheet"];
@@ -143,10 +148,6 @@ pub(super) fn report(ui: &mut egui::Ui, name: &str, r: &Json) {
             }
         }
         "evaluateFormula" => {
-            if let Some(e) = r.get("error") {
-                ui.label(lang.tr_error(&text(e)));
-                return;
-            }
             rows(ui, lang, "evaluate_formula", r, &[("Formula", "formula"), ("Result", "result")]);
             let steps = list(&r["steps"]);
             if !steps.is_empty() {
