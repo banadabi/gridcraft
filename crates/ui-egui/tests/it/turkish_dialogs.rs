@@ -68,6 +68,10 @@ fn command_search_accepts_turkish_labels_and_canonical_command_ids() {
         h.run_steps(6);
         assert!(h.query_by_label("Kaydet    Dosya").is_some(), "missing Save result for {query}");
     }
+    // Turkish folding against a translated label: plain lowercasing turns SIRALA into "sirala".
+    h.state_mut().dialog.as_mut().unwrap().search = "SIRALA".into();
+    h.run_steps(6);
+    assert!(h.query_by_label("A'dan Z'ye Sırala    Veri › Sırala ve Filtrele").is_some());
 }
 
 #[test]

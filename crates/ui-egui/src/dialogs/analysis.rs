@@ -231,12 +231,8 @@ pub(super) fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open
         if !matches!(op.as_str(), "int" | "bin") {
             edit(ui, d, "newRhs", 110.0, "Constraint Value");
         }
-        // The shared "Add" is Paste Special's arithmetic; a catalog without the Solver key keeps it.
-        let add = match lang.tr("Solver|Add") {
-            "Add" => lang.tr("Add"),
-            add => add,
-        };
-        if ui.button(add).clicked() {
+        // Not the shared "Add": in several catalogs that is Paste Special's arithmetic.
+        if ui.button(lang.tr("Solver|Add")).clicked() {
             let lhs = text(d, "newLhs");
             if !lhs.trim().is_empty() {
                 let rhs = if matches!(op.as_str(), "int" | "bin") { String::new() } else { format!(" {}", text(d, "newRhs").trim()) };
