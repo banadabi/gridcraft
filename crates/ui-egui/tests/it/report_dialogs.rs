@@ -87,15 +87,24 @@ fn evaluate_formula_shows_the_result_or_why_there_is_none() {
 }
 
 #[test]
-fn a_long_error_report_draws_its_first_rows_and_says_how_many_there_are() {
+fn a_long_error_report_pages_through_every_row() {
     let mut h = crate::support::blank_harness(4);
     // Far below the visible grid, so every #DIV/0! on screen is a report row.
     for r in 1000..1250 {
         h.state_mut().run("cell.set", json!({"cell": format!("A{r}"), "input": "=1/0"})).unwrap();
     }
     open(&mut h, "errorChecking");
-    assert!(h.query_by_label("Showing the first 200 of 250.").is_some());
+    assert!(h.query_by_label("Rows 1–200 of 250").is_some());
     assert_eq!(h.query_all_by_label("#DIV/0!").count(), 200);
+    assert!(h.query_by_label("Sheet1!A1249").is_none());
+    h.get_by_label("Next").click();
+    h.run_steps(4);
+    assert!(h.query_by_label("Rows 201–250 of 250").is_some());
+    assert_eq!(h.query_all_by_label("#DIV/0!").count(), 50);
+    assert!(h.query_by_label("Sheet1!A1249").is_some(), "the last finding is reachable");
+    h.get_by_label("Previous").click();
+    h.run_steps(4);
+    assert!(h.query_by_label("Sheet1!A1000").is_some());
 }
 
 #[test]

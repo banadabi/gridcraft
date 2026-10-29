@@ -18,7 +18,7 @@ fn text(v: &Json) -> String {
 
 /// The widest a report column grows before its text wraps, so a long formula stays in the window.
 const MAX_COL_WIDTH: f32 = 280.0;
-/// The rows a report table draws; a sheet can report up to 10,000 error cells.
+/// The rows a report table draws per page; a sheet can report up to 10,000 error cells.
 const MAX_ROWS: usize = 200;
 
 fn rows(ui: &mut egui::Ui, lang: Language, id: &str, report: &Json, rows: &[(&str, &str)]) {
@@ -31,28 +31,50 @@ fn rows(ui: &mut egui::Ui, lang: Language, id: &str, report: &Json, rows: &[(&st
     });
 }
 
-/// A table of the first [`MAX_ROWS`] `items`, each turned into its cells by `row` only when drawn.
+/// A table of `items`, a page of [`MAX_ROWS`] at a time; each row's cells are built by `row` only
+/// when drawn. Longer reports get Previous/Next buttons, and the page is kept per table `id`.
 fn table(ui: &mut egui::Ui, lang: Language, id: &str, headers: &[&str], items: &[Json], row: impl Fn(&Json) -> Vec<String>) {
+    let start = page(ui, lang, id, items.len()) * MAX_ROWS;
     egui::Grid::new(id).num_columns(headers.len()).spacing([24.0, 4.0]).max_col_width(MAX_COL_WIDTH).striped(true).show(ui, |ui| {
         for h in headers {
             ui.strong(lang.tr(h));
         }
         ui.end_row();
-        for item in items.iter().take(MAX_ROWS) {
+        for item in items.iter().skip(start).take(MAX_ROWS) {
             for cell in row(item) {
                 ui.add(egui::Label::new(cell).wrap());
             }
             ui.end_row();
         }
     });
-    more(ui, lang, items.len());
 }
 
-/// Says how many of `total` rows are shown when a report is longer than [`MAX_ROWS`].
-fn more(ui: &mut egui::Ui, lang: Language, total: usize) {
-    if total > MAX_ROWS {
-        ui.weak(lang.tr("Showing the first {shown} of {total}.").replace("{shown}", &MAX_ROWS.to_string()).replace("{total}", &total.to_string()));
+/// The page of the `total` rows to draw. Above the table of a report longer than [`MAX_ROWS`],
+/// it draws "Rows 201–400 of 1000" between Previous and Next.
+fn page(ui: &mut egui::Ui, lang: Language, id: &str, total: usize) -> usize {
+    let pages = total.div_ceil(MAX_ROWS).max(1);
+    let key = ui.make_persistent_id((id, "page"));
+    let mut page = ui.data(|d| d.get_temp::<usize>(key)).unwrap_or(0).min(pages - 1);
+    if pages > 1 {
+        ui.horizontal(|ui| {
+            if ui.add_enabled(page > 0, egui::Button::new(lang.tr("Previous"))).clicked() {
+                page -= 1;
+            }
+            let first = page * MAX_ROWS + 1;
+            let last = (first + MAX_ROWS - 1).min(total);
+            ui.label(
+                lang.tr("Rows {first}–{last} of {total}")
+                    .replace("{first}", &first.to_string())
+                    .replace("{last}", &last.to_string())
+                    .replace("{total}", &total.to_string()),
+            );
+            if ui.add_enabled(page + 1 < pages, egui::Button::new(lang.tr("Next"))).clicked() {
+                page += 1;
+            }
+        });
+        ui.data_mut(|d| d.insert_temp(key, page));
     }
+    page
 }
 
 fn list(v: &Json) -> &[Json] {
@@ -117,11 +139,7 @@ pub(super) fn report(ui: &mut egui::Ui, name: &str, r: &Json) {
             }
             if !circular.is_empty() {
                 ui.add_space(8.0);
-                ui.strong(lang.tr("Circular References"));
-                for c in circular.iter().take(MAX_ROWS) {
-                    ui.label(text(c));
-                }
-                more(ui, lang, circular.len());
+                table(ui, lang, "circular_references", &["Circular References"], circular, |c| vec![text(c)]);
             }
         }
         "evaluateFormula" => {
